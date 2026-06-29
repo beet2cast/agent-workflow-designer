@@ -850,16 +850,25 @@ function loadWf(e){const f=e.target.files[0];if(!f)return;const r=new FileReader
 function clearCanvas(){
   if(nodes.length===0&&edges.length===0)return;
   if(!confirm('确定清除画布？所有节点和连线将被删除。'))return;
+  // 1. 先暴力清空DOM（比依赖rAll更可靠）
+  document.getElementById('canvas').innerHTML='';
+  document.getElementById('connections').innerHTML='';
+  // 2. 清空数据
   nodes=[];edges=[];sel=null;activeScenario=null;teachStepIdx=-1;ctx={};
   nIdCnt=0;eIdCnt=0;logs=[];
+  // 3. 重置视图
   zoom=1;panX=0;panY=0;applyT();
+  // 4. 恢复UI状态
   document.getElementById('splash').style.display='';
   document.getElementById('varsPane').innerHTML='<div class="empty-msg">运行后查看变量</div>';
   document.getElementById('resPane').innerHTML='<div class="empty-msg">运行后查看结果</div>';
   document.getElementById('tutorialPane').innerHTML='<div class="empty-msg">加载教学场景后查看</div>';
   document.getElementById('bubble').style.display='none';
-  rLogs();rAll();loadCfg(null);
+  document.getElementById('cfgPane').innerHTML='<div class="empty-msg">选择一个节点查看配置</div>';
+  rLogs();
   addLog('画布已清除','success');
+  // 5. 清空撤销历史（防止Ctrl+Z恢复旧状态）
+  hist=[];histIdx=-1;
   saveSnap();
 }
 
