@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Agent 工作流设计器</title>
+<title>Agent 工作流教学演示器</title>
 <style>
 :root {
   --bg: #f0f2f5; --bg-card: #fff; --bg-canvas: #f5f6fa; --bg-hover: #f0f2ff;
@@ -22,7 +22,6 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;user-select:none;font-size:14px;transition:background .2s,color .2s}
-/* Header */
 .header{height:48px;background:var(--panel-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;justify-content:space-between;flex-shrink:0;}
 .logo{font-size:16px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px}
 .logo svg{width:22px;height:22px}
@@ -32,18 +31,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 .hd-actions .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:500}
 .hd-actions .btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
 .hd-actions .btn-icon{width:32px;padding:0;justify-content:center;font-size:16px}
-/* Main */
 .main{display:flex;height:calc(100vh - 48px)}
-/* Left */
-.left{width:176px;background:var(--panel-bg);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;overflow-y:auto}
+/* Left Panel */
+.left{width:200px;background:var(--panel-bg);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;overflow-y:auto}
 .left .sec{font-size:11px;color:var(--text-muted);font-weight:600;padding:8px 0 4px 4px;letter-spacing:.3px}
 .drag-item{padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;cursor:grab;font-size:13px;display:flex;align-items:center;gap:8px;transition:all .15s;color:var(--text);}
 .drag-item:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent);transform:translateY(-1px)}
 .drag-item:active{cursor:grabbing;transform:scale(.96)}
 .drag-item .ic{font-size:16px;width:24px;text-align:center;flex-shrink:0}
-.preset-wrap{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
-.preset-btn{width:100%;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--accent);cursor:pointer;margin-bottom:4px;transition:all .15s;text-align:left;font-weight:500}
-.preset-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* Scenario Cards */
+.scenario-wrap{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.scenario-card{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;margin-bottom:6px;transition:all .2s;text-align:left}
+.scenario-card:hover{border-color:var(--accent);background:var(--accent-light);transform:translateX(2px);box-shadow:var(--shadow)}
+.scenario-card .sci{font-size:22px;flex-shrink:0;line-height:1}
+.scenario-card .scb{flex:1;min-width:0}
+.scenario-card .scn{font-weight:600;font-size:13px;color:var(--text);margin-bottom:3px}
+.scenario-card .scd{font-size:11px;color:var(--text-muted);line-height:1.4;margin-bottom:4px}
+.scenario-card .sct{display:flex;gap:4px;flex-wrap:wrap}
+.scenario-card .sc-tag{font-size:10px;padding:1px 6px;border-radius:4px;background:var(--accent-light);color:var(--accent);font-weight:500}
 /* Canvas */
 .canvas-wrap{flex:1;position:relative;overflow:hidden;background:var(--bg-canvas);background-image:radial-gradient(circle at 20px 20px, var(--dot) .7px, transparent .7px);background-size:40px 40px;cursor:grab}
 .canvas-wrap.panning{cursor:grabbing}
@@ -60,14 +65,12 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 .node-card.selected{box-shadow:0 0 0 2px var(--accent-light);border-color:var(--accent)}
 .node-card.status-running{animation:pulse .8s ease-in-out infinite}
 .node-card.status-done{opacity:.85}.node-card.status-error{opacity:.85}
-/* Card head */
 .node-head{display:flex;align-items:center;gap:8px;padding:12px 14px 8px;border-bottom:1px solid var(--border)}
 .node-head .nic{font-size:18px;flex-shrink:0}
 .node-head .ntit{font-weight:600;font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .node-head .nbadge{font-size:10px;padding:1px 6px;border-radius:4px;background:var(--bg);color:var(--text-muted);font-weight:500;flex-shrink:0}
 .node-head .del-n{width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:9px;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
 .node-el:hover .del-n{display:flex}.del-n:hover{transform:scale(1.15)}
-/* Card body - params */
 .node-body{padding:6px 14px 8px;display:flex;gap:16px}
 .node-body .ns{flex:1;min-width:0}
 .ns-label{font-size:10px;color:var(--text-muted);margin-bottom:3px;display:flex;align-items:center;gap:4px;font-weight:500}
@@ -79,15 +82,14 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 .port-left{left:-7px;top:50%;transform:translateY(-50%)}.port-left:hover{transform:translateY(-50%) scale(1.4)}
 .port-right{right:-7px;top:50%;transform:translateY(-50%)}.port-right:hover{transform:translateY(-50%) scale(1.4)}
 .port.snap-hover{transform:translateY(-50%) scale(1.6)!important;border-color:#00b42a;background:rgba(0,180,42,.2);box-shadow:0 0 8px rgba(0,180,42,.5)}
-/* 连线拖拽中输入端口高亮 */
 /* Splash */
 .splash{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.7);backdrop-filter:blur(6px);padding:28px 40px;border-radius:16px;text-align:center;color:var(--text-muted);font-size:13px;pointer-events:none;z-index:1;border:1px solid rgba(255,255,255,.5);line-height:1.8}
 .dark .splash{background:rgba(35,35,36,.75);border-color:rgba(55,55,58,.5)}
 .splash strong{color:var(--accent)}
 /* Right */
-.right{width:320px;background:var(--panel-bg);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
-.r-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--panel-bg);flex-shrink:0}
-.r-tab{padding:8px 12px;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.right{width:340px;background:var(--panel-bg);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.r-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--panel-bg);flex-shrink:0;overflow-x:auto}
+.r-tab{padding:8px 11px;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
 .r-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 .r-tab:hover{color:var(--text-sec)}
 .r-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
@@ -102,6 +104,7 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 .cfg textarea{resize:vertical;min-height:50px;font-size:12px}
 .cfg .row{display:flex;gap:8px;margin-bottom:10px}
 .cfg .row>*{flex:1}
+.cfg .hint{font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.4}
 /* API */
 .api{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--log-bg)}
 .api .t{font-size:12px;font-weight:600;color:var(--accent);cursor:pointer;display:flex;align-items:center;gap:4px}
@@ -120,6 +123,36 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 .log-t{color:var(--text-muted);margin-right:6px;font-size:11px}.log-info{color:var(--text-sec)}.log-success{color:var(--green)}.log-warn{color:var(--orange)}.log-error{color:var(--red)}
 .res-p{white-space:pre-wrap;font-size:12px}
 .var-i{padding:3px 0;border-bottom:1px solid var(--border)}.var-k{color:var(--accent);font-weight:600}.var-v{color:var(--text);word-break:break-all}
+/* Tutorial Panel */
+.tutorial-wrap{flex:1;overflow-y:auto;padding:12px 14px}
+.tut-summary{background:var(--accent-light);border-radius:10px;padding:14px;margin-bottom:16px;border:1px solid var(--border)}
+.tut-summary h3{font-size:14px;color:var(--accent);margin-bottom:6px;font-weight:700}
+.tut-summary p{font-size:12px;color:var(--text-sec);line-height:1.6;margin-bottom:4px}
+.tut-summary .tu-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tut-summary .tu-meta span{font-size:10px;padding:2px 8px;border-radius:4px;background:var(--bg);color:var(--text-muted);font-weight:500}
+.tut-step{margin-bottom:14px;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-card);transition:all .3s;position:relative}
+.tut-step.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-light);background:var(--bg-hover)}
+.tut-step .ts-num{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px}
+.tut-step .ts-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}
+.tut-step .ts-body{font-size:12px;color:var(--text-sec);line-height:1.7}
+.tut-step .ts-io{display:flex;gap:16px;margin-top:8px;font-size:11px}
+.tut-step .ts-io>div{flex:1;padding:6px 8px;border-radius:6px;background:var(--bg)}
+.tut-step .ts-io .tsi-label{font-weight:600;color:var(--text-muted);margin-bottom:2px}
+.tut-step .ts-io .tsi-val{color:var(--text)}
+.tut-step .ts-concepts{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.tut-step .ts-cpt{font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(0,180,42,.1);color:var(--green);font-weight:600}
+/* Teaching Bubble */
+.teach-bubble{position:absolute;z-index:30;max-width:260px;background:var(--bg-card);border:2px solid var(--accent);border-radius:12px;box-shadow:var(--shadow-lg);pointer-events:auto;animation:tbIn .3s ease-out}
+@keyframes tbIn{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
+.teach-bubble .tb-header{padding:10px 14px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;border-radius:10px 10px 0 0;display:flex;align-items:center;gap:6px}
+.teach-bubble .tb-body{padding:10px 14px;font-size:12px;color:var(--text-sec);line-height:1.7}
+.teach-bubble .tb-io{padding:6px 14px;display:flex;gap:12px;font-size:11px;border-top:1px solid var(--border)}
+.teach-bubble .tb-io>span{color:var(--text-muted)}
+.teach-bubble .tb-io>span b{color:var(--text);font-weight:600}
+.teach-bubble .tb-footer{padding:8px 14px;border-top:1px solid var(--border);display:flex;gap:6px;align-items:center}
+.teach-bubble .tb-footer button{padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);font-size:11px;cursor:pointer;color:var(--text-sec);font-weight:500;transition:all .15s}
+.teach-bubble .tb-footer button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.teach-bubble .tb-footer .tb-step{font-size:10px;color:var(--text-muted);flex:1;text-align:right}
 /* Step bar */
 .step-bar{display:none;padding:6px 10px;background:var(--panel-bg);border-top:1px solid var(--border);gap:6px;align-items:center;flex-shrink:0}
 .step-bar.active{display:flex}
@@ -153,7 +186,7 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 <body>
 
 <div class="header">
-  <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="3"/><circle cx="5" cy="20" r="3"/><circle cx="19" cy="20" r="3"/><path d="M12 7v3M5 17l2-4M19 17l-2-4"/><path d="M7 13h10" stroke-width="2.5"/></svg> Workflow</div>
+  <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="3"/><circle cx="5" cy="20" r="3"/><circle cx="19" cy="20" r="3"/><path d="M12 7v3M5 17l2-4M19 17l-2-4"/><path d="M7 13h10" stroke-width="2.5"/></svg> Agent 教学演示器</div>
   <div class="hd-actions">
     <button onclick="validateWf()">✓ 验证</button>
     <button onclick="exportImg()">🖼 导出</button>
@@ -166,28 +199,28 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 </div>
 
 <div class="main">
+  <!-- ===== Left: 节点 + 场景库 ===== -->
   <div class="left">
-    <div class="sec">节点</div>
+    <div class="sec">🧩 节点</div>
     <div class="drag-item" onmousedown="startDrag(event,'start')"><span class="ic">▶</span> 开始</div>
     <div class="drag-item" onmousedown="startDrag(event,'agent')"><span class="ic">⚡</span> 智能体</div>
     <div class="drag-item" onmousedown="startDrag(event,'condition')"><span class="ic">◆</span> 条件</div>
     <div class="drag-item" onmousedown="startDrag(event,'parallel')"><span class="ic">⇄</span> 并行</div>
     <div class="drag-item" onmousedown="startDrag(event,'end')"><span class="ic">⏹</span> 结束</div>
-    <div class="preset-wrap">
-      <div class="sec">预设</div>
-      <button class="preset-btn" onclick="loadPreset('simple')">→ 简单线性</button>
-      <button class="preset-btn" onclick="loadPreset('feedback')">↺ 质检循环</button>
-      <button class="preset-btn" onclick="loadPreset('parallel')">⇉ 并行处理</button>
-      <button class="preset-btn" onclick="loadPreset('multi')">🌲 多路分支</button>
+    <div class="scenario-wrap">
+      <div class="sec">🎓 教学场景</div>
+      <div id="scenarioList"></div>
     </div>
   </div>
 
+  <!-- ===== Canvas ===== -->
   <div class="canvas-wrap" id="canvasWrap">
-    <div class="splash" id="splash"><strong>从左侧拖拽节点开始设计</strong><br/>从 <span style="color:var(--accent)">●</span> 拖到另一个 <span style="color:var(--accent)">●</span> 松手即连<br/>滚轮缩放 · 拖拽空白平移 · Ctrl+Z 撤销</div>
+    <div class="splash" id="splash"><strong>选一个教学场景开始学习吧 👈</strong><br/>或从左侧拖拽节点自由设计<br/>从 <span style="color:var(--accent)">●</span> 拖到另一个 <span style="color:var(--accent)">●</span> 松手即连</div>
     <svg class="connections" id="connections"></svg>
     <div id="canvas"></div>
   </div>
 
+  <!-- ===== Right: 配置 / 教程 / 变量 / 日志 / 结果 / 检查 ===== -->
   <div class="right">
     <div class="api">
       <div class="t" onclick="togApi()">⚙️ API 设置 <span id="apiArr">▶</span></div>
@@ -209,6 +242,7 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 
     <div class="r-tabs">
       <div class="r-tab active" onclick="switchTab('cfg')">配置</div>
+      <div class="r-tab" onclick="switchTab('tutorial')">教程</div>
       <div class="r-tab" onclick="switchTab('vars')">变量</div>
       <div class="r-tab" onclick="switchTab('log')">日志</div>
       <div class="r-tab" onclick="switchTab('res')">结果</div>
@@ -217,6 +251,7 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 
     <div class="r-body">
       <div class="rc active" id="rcCfg"><div class="cfg" id="cfgPane"><div class="empty">点击节点进行配置</div></div></div>
+      <div class="rc" id="rcTutorial"><div class="tutorial-wrap" id="tutorialPane"><div class="empty-msg">加载教学场景后查看</div></div></div>
       <div class="rc" id="rcVars"><div class="vars-p" id="varsPane"><div class="empty-msg">运行后查看变量</div></div></div>
       <div class="rc" id="rcLog"><div class="log-p" id="logPane"><div class="empty-msg">运行后查看日志</div></div></div>
       <div class="rc" id="rcRes"><div class="res-p" id="resPane"><div class="empty-msg">运行后查看结果</div></div></div>
@@ -241,6 +276,9 @@ let logs=[],stepQ=[],stepIdx=0,ctx={},hist=[],histIdx=-1,isDark=false;
 let _drag=null,_move=null,_conn=null,_ctxTgt=null,_pan=null;
 let zoom=1,panX=0,panY=0;
 const NW=200,NH=68;
+
+// Current teaching state
+let activeScenario=null, teachStepIdx=0;
 
 const ST={start:{border:'#00b42a',icon:'▶',badge:'开始',color:'#00b42a'},
   end:{border:'#f53f3f',icon:'⏹',badge:'结束',color:'#f53f3f'},
@@ -284,9 +322,10 @@ async function testApi(){const a=getApi();if(!a.key){alert('请输入API Key');r
   catch(e){document.getElementById('apiStatus').textContent='❌ '+e.message;document.getElementById('apiStatus').style.color='var(--red)'}}
 
 // Tabs
-function switchTab(t){const tabs=['cfg','vars','log','res','val'];
+function switchTab(t){const tabs=['cfg','tutorial','vars','log','res','val'];
   document.querySelectorAll('.r-tab').forEach((el,i)=>el.classList.toggle('active',tabs[i]===t));
-  tabs.forEach(id=>{const el=document.getElementById('rc'+id.charAt(0).toUpperCase()+id.slice(1));if(el)el.classList.toggle('active',id===t)})}
+  tabs.forEach(id=>{const el=document.getElementById('rc'+id.charAt(0).toUpperCase()+id.slice(1));if(el)el.classList.toggle('active',id===t)})
+}
 function addLog(m,t='info'){const ti=new Date().toLocaleTimeString();logs.unshift({time:ti,msg:m,type:t});if(logs.length>200)logs.pop();rLogs()}
 function clearLogs(){logs=[];rLogs();document.getElementById('varsPane').innerHTML='<div class="empty-msg">运行后查看变量</div>'}
 function rLogs(){const el=document.getElementById('logPane');
@@ -297,12 +336,222 @@ function rVars(){const k=Object.keys(ctx);
   document.getElementById('varsPane').innerHTML=k.map(kk=>`<div class="var-i"><span class="var-k">${eH(kk)}</span>: <span class="var-v">${eH(JSON.stringify(ctx[kk]))}</span></div>`).join('')}
 function showRes(t){document.getElementById('resPane').textContent=t}
 
-// Undo
-function saveSnap(){const sn={nodes:nodes.map(n=>({...n,_status:void 0,isRunning:false})),edges:edges.map(e=>({...e}))};
+// ===== Scenario System =====
+const SCENARIOS = {
+  '01-kefu': {
+    id: '01-kefu', name: '客服分流', icon: '💬',
+    desc: '用户咨询 → AI理解意图 → 分类路由 → 专业回复',
+    tags: ['串行', '条件分支', '新手入门'],
+    nodes: 5,
+    courseRef: '第1天第5节：串行工作流',
+    knowledge: ['串行工作流', '条件路由', '上下文传递', 'Agent职责划分'],
+    graph: { nodes: [
+      {id:'n1',type:'start',x:280,y:60,label:'用户咨询',inputDesc:'用户原始问题',outputDesc:'结构化问题文本',transform:'接收用户咨询',role:'',prompt:''},
+      {id:'n2',type:'agent',x:280,y:180,label:'意图识别',role:'客服意图分类助手',prompt:'分析用户消息，判断意图类别：退货退款、产品咨询、投诉建议、其他。输出格式：意图=XXX',inputDesc:'用户消息',outputDesc:'意图类别',transform:'判断用户意图'},
+      {id:'n3',type:'condition',x:280,y:310,label:'路由判断',inputDesc:'意图类别',outputDesc:'分支选择',transform:'intent'},
+      {id:'n4',type:'agent',x:80,y:450,label:'退货专员',role:'退货退款处理助手',prompt:'用户需要退货退款。请根据用户描述给出退货流程指引和注意事项。',inputDesc:'用户问题',outputDesc:'退货指引',transform:'生成退货回复'},
+      {id:'n5',type:'agent',x:280,y:450,label:'咨询回复',role:'产品咨询助手',prompt:'用户咨询产品相关问题。请给出专业、清晰的产品说明和建议。',inputDesc:'用户问题',outputDesc:'产品说明',transform:'生成咨询回复'},
+      {id:'n6',type:'agent',x:480,y:450,label:'投诉处理',role:'投诉处理专员',prompt:'用户提出投诉或建议。请先表达理解和歉意，然后给出处理方案。',inputDesc:'用户问题',outputDesc:'处理方案',transform:'生成投诉回复'},
+      {id:'n7',type:'end',x:280,y:580,label:'输出回复',inputDesc:'最终回复内容',outputDesc:'发送给用户',transform:'输出回复'}
+    ], edges: [
+      {source:'n1',target:'n2',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:''},
+      {source:'n2',target:'n3',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:''},
+      {source:'n3',target:'n4',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:'退货'},
+      {source:'n3',target:'n5',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:'咨询'},
+      {source:'n3',target:'n6',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:'投诉'},
+      {source:'n4',target:'n7',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:''},
+      {source:'n5',target:'n7',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:''},
+      {source:'n6',target:'n7',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:''}
+    ]},
+    tutorial: {
+      summary: '这是一个客服分流工作流，模拟了真实客服系统中「理解用户意图 → 分类路由 → 专业回复」的完整链路。通过这个案例，你将理解 Agent 之间如何通过上下文传递信息，以及条件节点如何实现智能路由。',
+      designReason: '为什么这样设计：客服场景天然需要「理解—分类—回复」三个阶段。如果一个 Agent 同时做所有事，prompt 会非常长且容易出错。拆成 4 个 Agent 后，每个 Agent 只负责一件事，职责清晰、易于优化。这是 Agent 设计的核心原则：单一职责。',
+      steps: [
+        { nodeId: 'n1', title: '第1步：接收用户咨询', content: '工作流从「开始」节点启动。用户发送的消息（如"我买的衣服小了，想退货"）在这里被标准化成结构化文本，传递给下游 Agent。开始节点是整个工作流的入口，它不做处理，只负责接收和转发。', inputDesc: '用户原始问题', outputDesc: '结构化问题文本', keyConcepts: ['入口节点', '输入标准化', '上下文传递'] },
+        { nodeId: 'n2', title: '第2步：意图识别', content: '这是第一个真正"干活"的 Agent。它读取用户消息，判断意图属于哪个类别（退货/咨询/投诉）。注意它的 prompt 里明确写了输出格式"意图=XXX"，这样下游条件节点才能准确解析。Agent 的核心能力就体现在 prompt 的设计上。', inputDesc: '用户消息', outputDesc: '意图类别', keyConcepts: ['Prompt设计', '意图分类', '输出结构化'] },
+        { nodeId: 'n3', title: '第3步：路由判断', content: '条件节点（菱形）是工作流的"分叉路口"。它读取上一步的意图识别结果，根据意图类别将请求路由到不同的专业 Agent。你可以看到有三条线分别标注了"退货""咨询""投诉"，代表三条不同的执行路径。条件节点让工作流有了"智能选择"的能力。', inputDesc: '意图类别', outputDesc: '分支选择', keyConcepts: ['条件路由', '多路分支', '标签连线'] },
+        { nodeId: 'n4', title: '第4步：专业回复（退货路径）', content: '如果用户想退货，请求会被路由到这个"退货专员"Agent。注意它的 prompt 是针对退货场景专门优化的——它知道退货流程、退货运费规则等专业知识。这就是 Agent 分工的价值：每个 Agent 拥有不同领域的知识。', inputDesc: '用户问题', outputDesc: '退货指引', keyConcepts: ['Agent分工', '领域知识注入', 'Prompt定制'] },
+        { nodeId: 'n5', title: '第4步：专业回复（咨询路径）', content: '如果用户是产品咨询（如"这个产品有什么功能"），请求会被路由到"咨询回复"Agent。它的 prompt 侧重产品知识解答。注意：退货和咨询两个 Agent 是互斥的，同一时间只会执行其中一个，这就是条件分支的工作方式。', inputDesc: '用户问题', outputDesc: '产品说明', keyConcepts: ['互斥分支', '专业领域', '条件执行'] },
+        { nodeId: 'n6', title: '第4步：专业回复（投诉路径）', content: '如果用户是投诉或建议，请求被路由到"投诉处理"Agent。它的 prompt 重点在安抚情绪和处理方案。注意它的回复风格和前面两个 Agent 完全不同——这是 prompt 决定了 Agent 的行为风格。', inputDesc: '用户问题', outputDesc: '处理方案', keyConcepts: ['情绪管理', 'Prompt风格', '场景定制'] },
+        { nodeId: 'n7', title: '第5步：输出回复', content: '无论走哪条路径，最终的回复都会汇聚到「结束」节点。这个节点负责输出最终结果给用户。在真实系统中，这里可能会连接企业微信、短信、App推送等渠道。至此，一个完整的客服对话流程结束。', inputDesc: '最终回复内容', outputDesc: '发送给用户', keyConcepts: ['结果汇聚', '终点输出', '多渠道分发'] }
+      ]
+    }
+  },
+  '02-shenjiao': {
+    id: '02-shenjiao', name: '文章审校流水线', icon: '📝',
+    desc: '草稿 → 格式检查 → 内容质检 → 通过/退回 → 最终发布',
+    tags: ['串行', '循环', '质量保障'],
+    nodes: 6,
+    courseRef: '第1天第5-6节：串行+循环工作流',
+    knowledge: ['串行工作流', '循环反馈', '质量阈值', '迭代优化'],
+    graph: { nodes: [
+      {id:'n1',type:'start',x:300,y:20,label:'接收草稿',inputDesc:'文章草稿',outputDesc:'标准化草稿',transform:'接收文章草稿',role:'',prompt:''},
+      {id:'n2',type:'agent',x:300,y:130,label:'格式检查',role:'文章格式检查员',prompt:'检查文章格式：1.标题层级是否正确 2.段落长度是否合适 3.标点符号是否正确 4.是否有明显的排版问题。输出格式：格式分=XX，问题列表=...',inputDesc:'草稿',outputDesc:'格式分数',transform:'检查格式'},
+      {id:'n3',type:'agent',x:300,y:250,label:'内容质检',role:'内容质检员',prompt:'检查文章内容质量：1.逻辑是否通顺 2.事实是否准确 3.表达是否清晰 4.是否符合发布标准。输出格式：质检分=XX，修改建议=...',inputDesc:'格式检查后的文章',outputDesc:'质检分数',transform:'quality>=80'},
+      {id:'n4',type:'condition',x:300,y:370,label:'合格判断',inputDesc:'质检分数',outputDesc:'通过/退回',transform:'quality>=80'},
+      {id:'n5',type:'agent',x:100,y:370,label:'修改优化',role:'文章修改助手',prompt:'根据质检反馈修改文章。对每个问题逐一修复，保持原文风格。修改完成后标注"修改完成"。',inputDesc:'质检反馈',outputDesc:'修改后的文章',transform:'根据反馈修改'},
+      {id:'n6',type:'end',x:500,y:370,label:'发布',inputDesc:'通过质检的文章',outputDesc:'发布到平台',transform:'发布文章'}
+    ], edges: [
+      {source:'n1',target:'n2',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:''},
+      {source:'n2',target:'n3',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:''},
+      {source:'n3',target:'n4',sourceSide:'right',targetSide:'left',color:'#4e6af2',label:'分数'},
+      {source:'n4',target:'n6',sourceSide:'right',targetSide:'left',color:'#00b42a',label:'通过'},
+      {source:'n4',target:'n5',sourceSide:'right',targetSide:'left',color:'#f53f3f',label:'退回'},
+      {source:'n5',target:'n3',sourceSide:'right',targetSide:'left',color:'#ff7d00',label:'重新质检'}
+    ]},
+    tutorial: {
+      summary: '这是一个文章审校流水线，模拟了真实内容生产流程中的「草稿→格式检查→内容质检→通过/退回→修改优化→重新质检」循环。通过这个案例，你将理解 Agent 之间如何通过循环反馈实现持续优化——这是 Agent 工作流中最经典的设计模式之一。',
+      designReason: '为什么这样设计：文章审校天然需要「检查→反馈→修改→再检查」的循环。如果只检查一次，质量无法保证。设计成两个检查节点（格式+内容）是因为格式错误和内容错误需要不同的判断标准。循环设计让不合格的文章能回到检查环节，直到达标为止。',
+      steps: [
+        { nodeId: 'n1', title: '第1步：接收文章草稿', content: '工作流从接收草稿开始。在真实场景中，这里可能是作者提交的初稿、AI生成的内容、或者从CMS系统同步过来的文章。开始节点的作用是把外部输入标准化，确保下游 Agent 收到的格式一致。', inputDesc: '文章草稿', outputDesc: '标准化草稿', keyConcepts: ['入口标准化', '输入适配'] },
+        { nodeId: 'n2', title: '第2步：格式检查', content: '第一个检查节点。它的职责很单一：只看格式，不看内容。检查标题层级、段落长度、标点符号等排版问题。注意它输出的 "格式分=XX" 是结构化数据，下游节点可以直接解析。把格式和内容分开检查，是质量保障体系的最佳实践。', inputDesc: '草稿', outputDesc: '格式分数', keyConcepts: ['格式检查', '结构化输出', '单一职责'] },
+        { nodeId: 'n3', title: '第3步：内容质检', content: '第二个检查节点，关注内容质量而非格式。它检查逻辑是否通顺、事实是否准确、表达是否清晰。注意它的输出 "质检分=XX"——这个分数将决定文章能否通过。质检分数是循环的"开关"：分数不够就回到修改节点，够了就通过。', inputDesc: '格式检查后的文章', outputDesc: '质检分数', keyConcepts: ['内容质检', '质量打分', '阈值控制'] },
+        { nodeId: 'n4', title: '第4步：合格判断', content: '这是整个工作流最关键的决策点。条件节点判断质检分数是否≥80分：如果达标（绿色连线"通过"），文章直接进入「发布」节点；如果不达标（红色连线"退回"），文章进入「修改优化」节点，修改后再回到质检（橙色连线"重新质检"）。这就是循环的核心机制。', inputDesc: '质检分数', outputDesc: '通过/退回', keyConcepts: ['条件决策', '分支标签', '循环触发'] },
+        { nodeId: 'n5', title: '第5步：修改优化', content: '当文章不合格时，进入这个修改 Agent。它的 prompt 强调"对每个问题逐一修复，保持原文风格"——这种约束能防止 Agent 过度修改导致文章面目全非。修改完成后，文章会沿橙色连线回到「内容质检」节点，开始新一轮检查。这个循环会一直持续，直到质检分数达标。', inputDesc: '质检反馈', outputDesc: '修改后的文章', keyConcepts: ['反馈驱动修改', '迭代优化', '循环回路'] },
+        { nodeId: 'n6', title: '第6步：发布', content: '文章通过所有检查后到达「结束」节点。在真实系统中，这里可以连接微信公众号API、WordPress、或其他CMS系统自动发布。从草稿到发布，整个流程无需人工干预——这就是 Agent 工作流的终极目标：端到端自动化。', inputDesc: '通过质检的文章', outputDesc: '发布到平台', keyConcepts: ['端到端自动化', '结果输出', '流程闭环'] }
+      ]
+    }
+  }
+};
+
+function initScenarioList(){
+  const el=document.getElementById('scenarioList');
+  el.innerHTML=Object.values(SCENARIOS).map(s=>`
+    <div class="scenario-card" onclick="loadScenario('${s.id}')">
+      <div class="sci">${s.icon}</div>
+      <div class="scb">
+        <div class="scn">${s.name}</div>
+        <div class="scd">${s.desc}</div>
+        <div class="sct">${s.tags.map(t=>`<span class="sc-tag">${t}</span>`).join('')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadScenario(id){
+  if(sim)return;
+  const sc=SCENARIOS[id];if(!sc)return;
+  if(nodes.length&&!confirm(`加载「${sc.name}」将清空画布，确定？`))return;
+  nodes=[];edges=[];sel=null;nIdCnt=0;eIdCnt=0;activeScenario=sc;teachStepIdx=-1;
+  clearLogs();document.getElementById('splash').style.display='none';
+  document.getElementById('resPane').innerHTML='<div class="empty-msg">运行后查看结果</div>';
+
+  // Load nodes
+  sc.graph.nodes.forEach(nd=>{
+    const id=nd.id||uid();
+    nodes.push({...nd,id,isRunning:false,_status:'idle',_fold:false,_bp:false});
+    if(parseInt(id.replace('n',''))>nIdCnt)nIdCnt=parseInt(id.replace('n',''));
+  });
+
+  // Load edges
+  sc.graph.edges.forEach(ed=>{
+    edges.push({id:euid(),...ed,_flow:false});
+  });
+
+  // Render tutorial
+  renderTutorial();
+
+  saveSnap();rAll();
+  addLog(`📚 加载场景: ${sc.name} (${sc.nodes}个节点, ${sc.knowledge.length}个知识点)`,'success');
+  switchTab('tutorial');
+}
+
+function renderTutorial(){
+  const el=document.getElementById('tutorialPane');
+  if(!activeScenario){
+    el.innerHTML='<div class="empty-msg">加载教学场景后查看</div>';return;
+  }
+  const s=activeScenario;
+  let h=`<div class="tut-summary">
+    <h3>📖 ${s.name}</h3>
+    <p>${s.tutorial.summary}</p>
+    <p style="color:var(--accent);font-weight:500;margin-top:6px">💡 ${s.tutorial.designReason}</p>
+    <div class="tu-meta">
+      <span>📚 ${s.courseRef}</span>
+      <span>🔗 ${s.nodes}个节点</span>
+      ${s.knowledge.map(k=>`<span>✦ ${k}</span>`).join('')}
+    </div>
+  </div>`;
+
+  s.tutorial.steps.forEach((st,i)=>{
+    h+=`<div class="tut-step" id="tutStep${i}">
+      <div class="ts-num">${st.title.split('：')[0]}</div>
+      <div class="ts-title">${st.title}</div>
+      <div class="ts-body">${st.content}</div>
+      <div class="ts-io">
+        <div><div class="tsi-label">📥 输入</div><div class="tsi-val">${st.inputDesc}</div></div>
+        <div><div class="tsi-label">📤 输出</div><div class="tsi-val">${st.outputDesc}</div></div>
+      </div>
+      <div class="ts-concepts">${st.keyConcepts.map(c=>`<span class="ts-cpt">🔑 ${c}</span>`).join('')}</div>
+    </div>`;
+  });
+  el.innerHTML=h;
+}
+
+function highlightTutorialStep(idx){
+  // Remove all active highlights
+  document.querySelectorAll('.tut-step.active').forEach(el=>el.classList.remove('active'));
+  // Highlight current step
+  const el=document.getElementById('tutStep'+idx);
+  if(el){
+    el.classList.add('active');
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+
+// ===== Teaching Bubble =====
+function showBubble(nodeId, stepIdx){
+  hideBubble();
+  if(!activeScenario)return;
+  const step=activeScenario.tutorial.steps[stepIdx];
+  if(!step)return;
+
+  const node=nodes.find(n=>n.id===nodeId);
+  if(!node)return;
+
+  const canvas=document.getElementById('canvas');
+  const bubble=document.createElement('div');
+  bubble.className='teach-bubble';bubble.id='teachBubble';
+  // Position above-right of node
+  bubble.style.left=(node.x+NW+16)+'px';
+  bubble.style.top=(node.y-20)+'px';
+
+  bubble.innerHTML=`
+    <div class="tb-header">🔍 ${step.title}</div>
+    <div class="tb-body">${step.content.substring(0,160)}${step.content.length>160?'...':''}</div>
+    <div class="tb-io">
+      <span>📥 输入：<b>${step.inputDesc}</b></span>
+      <span>📤 输出：<b>${step.outputDesc}</b></span>
+    </div>
+    <div class="tb-footer">
+      <button onclick="teachNext()">下一步 ▶</button>
+      <span class="tb-step">${stepIdx+1}/${activeScenario.tutorial.steps.length}</span>
+    </div>
+  `;
+  canvas.appendChild(bubble);
+
+  // Update tutorial panel
+  highlightTutorialStep(stepIdx);
+  teachStepIdx=stepIdx;
+}
+
+function hideBubble(){
+  const b=document.getElementById('teachBubble');
+  if(b)b.remove();
+}
+
+function teachNext(){
+  hideBubble();
+  document.querySelectorAll('.tut-step.active').forEach(el=>el.classList.remove('active'));
+  if(sim){return} // During auto-run, hide bubble to let simulation continue
+}
+
+// ===== Undo =====
+function saveSnap(){const sn={nodes:nodes.map(n=>({...n,_status:void 0,isRunning:false})),edges:edges.map(e=>({...e,_flow:false}))};
   hist=hist.slice(0,histIdx+1);hist.push(sn);if(hist.length>50)hist.shift();histIdx=hist.length-1}
 function undo(){if(histIdx<=0)return;histIdx--;restore(hist[histIdx])}
 function redo(){if(histIdx>=hist.length-1)return;histIdx++;restore(hist[histIdx])}
-function restore(s){nodes=s.nodes.map(n=>({...n,_status:'idle',isRunning:false}));edges=s.edges.map(e=>({...e}));sel=null;rAll();loadCfg(null);
+function restore(s){nodes=s.nodes.map(n=>({...n,_status:'idle',isRunning:false}));edges=s.edges.map(e=>({...e,_flow:false}));sel=null;rAll();loadCfg(null);
   document.getElementById('splash').style.display=nodes.length?'none':'';document.getElementById('resPane').textContent=''}
 document.addEventListener('keydown',function(e){
   if(e.target.closest('input,textarea,select'))return;
@@ -322,32 +571,46 @@ function buildN(node){
   div.style.left=node.x+'px';div.style.top=node.y+'px';
   const card=document.createElement('div');card.className='node-card'+(node._status?' status-'+node._status:'')+(node._bp?' has-bp':'');
   card.style.borderColor=s.border;
-  // Head
   const hd=document.createElement('div');hd.className='node-head';
   const ic=document.createElement('span');ic.className='nic';ic.textContent=s.icon;hd.appendChild(ic);
-  const ti=document.createElement('span');ti.className='ntit';ti.textContent=node.label||'未命名';hd.appendChild(ti);
+  const ti=document.createElement('span');ti.className='ntit';
+  // Show role if available
+  if(node.role){
+    ti.innerHTML=`${eH(node.label||'未命名')} <small style="color:var(--text-muted);font-weight:400;font-size:10px">${eH(node.role)}</small>`;
+  }else{
+    ti.textContent=node.label||'未命名';
+  }
+  hd.appendChild(ti);
   const bg=document.createElement('span');bg.className='nbadge';bg.textContent=s.badge;hd.appendChild(bg);
   const del=document.createElement('button');del.className='del-n';del.textContent='✕';del.title='删除';
   del.addEventListener('mousedown',e=>e.stopPropagation());
   del.addEventListener('click',e=>{e.stopPropagation();if(!sim){delNode(node.id)}});hd.appendChild(del);
   card.appendChild(hd);
-  // Body with params
   const bd=document.createElement('div');bd.className='node-body';
   if(!node._fold){
     const il=document.createElement('div');il.className='ns';
-    const ilb=document.createElement('div');ilb.className='ns-label';(node.inputDesc||node.type==='start')&&(ilb.innerHTML='<span class="dot" style="background:var(--blue)"></span> 输入');il.appendChild(ilb);
+    (node.inputDesc||node.type==='start')&&(il.innerHTML='<div class="ns-label"><span class="dot" style="background:var(--blue)"></span> 输入</div>');
     const ii=document.createElement('div');ii.className='ns-item';
     ii.innerHTML='<span class="dot" style="background:var(--blue)"></span> '+(node.inputDesc||'—');
-    if(node.inputDesc)il.appendChild(ii);bd.appendChild(il);
+    il.appendChild(ii);bd.appendChild(il);
     const ol=document.createElement('div');ol.className='ns';
-    const olb=document.createElement('div');olb.className='ns-label';(node.outputDesc||node.type==='end')&&(olb.innerHTML='<span class="dot" style="background:var(--orange)"></span> 输出');ol.appendChild(olb);
+    (node.outputDesc||node.type==='end')&&(ol.innerHTML='<div class="ns-label"><span class="dot" style="background:var(--orange)"></span> 输出</div>');
     const oi=document.createElement('div');oi.className='ns-item';
     oi.innerHTML='<span class="dot" style="background:var(--orange)"></span> '+(node.outputDesc||'—');
-    if(node.outputDesc)ol.appendChild(oi);bd.appendChild(ol);
+    ol.appendChild(oi);bd.appendChild(ol);
+    // Show prompt preview for agent nodes
+    if(node.prompt){
+      const pl=document.createElement('div');pl.className='ns';pl.style.flex='2';
+      pl.innerHTML='<div class="ns-label" style="color:var(--purple)">💬 Prompt</div>';
+      const pi2=document.createElement('div');pi2.className='ns-item';
+      pi2.style.cssText='white-space:normal;font-size:10px;line-height:1.3;max-height:36px;overflow:hidden;color:var(--text-muted)';
+      pi2.textContent=node.prompt.substring(0,60)+(node.prompt.length>60?'...':'');
+      pl.appendChild(pi2);bd.appendChild(pl);
+    }
   }
   card.appendChild(bd);
   div.appendChild(card);
-  // Ports: Start=仅右, End=仅左, 其他=双向
+  // Ports
   if(node.type!=='start'){const pi=document.createElement('div');pi.className='port port-left';pi.dataset.node=node.id;pi.dataset.pT='left';pi.title='连线';card.appendChild(pi);
     pi.addEventListener('mousedown',function(e){e.stopPropagation();e.preventDefault();finishConn(node.id,'left')});}
   if(node.type!=='end'){const po=document.createElement('div');po.className='port port-right';po.dataset.node=node.id;po.dataset.pT='right';po.title='连线';card.appendChild(po);
@@ -397,7 +660,7 @@ function getPortPos(node,side){
   return{x:(cx-panX)/zoom,y:(cy-panY)/zoom}
 }
 
-// ===== Connections: 双向拖拽 =====
+// ===== Connections =====
 function startConn(e,fromId,fromSide){
   if(sim)return;
   e.preventDefault();
@@ -416,7 +679,6 @@ function onConn(e){
   const sx=sp.x,sy=sp.y;
   const mx_vp=e.clientX-rect.left,my_vp=e.clientY-rect.top;
   const mx=(mx_vp-panX)/zoom,my=(my_vp-panY)/zoom;
-  // 吸附：所有端口
   let snap=null,snapD=Infinity;
   document.querySelectorAll('.port').forEach(el=>{
     const er=el.getBoundingClientRect();
@@ -424,14 +686,13 @@ function onConn(e){
     const d=Math.hypot(mx_vp-ecx_vp,my_vp-ecy_vp);
     if(d<40&&d<snapD&&el.dataset.node!==_conn.from){snapD=d;snap={nodeId:el.dataset.node,side:el.dataset.pT}}
   });
-  // 吸附高亮
   document.querySelectorAll('.port.snap-hover').forEach(el=>el.classList.remove('snap-hover'));
   if(snap){
     const targetPort=document.querySelector(`#n-${snap.nodeId} .port[data-p-t="${snap.side}"]`);
     if(targetPort)targetPort.classList.add('snap-hover');
   }
-  const tx=snap?(getPortPos(nodes.find(n=>n.id===snap.nodeId)||fn,snap.side).x):mx;
-  const ty=snap?(getPortPos(nodes.find(n=>n.id===snap.nodeId)||fn,snap.side).y):my;
+  const tx=snap?(getPortPos(nodes.find(n=>n.id===snap.nodeId)||fn,snap.side||'left').x):mx;
+  const ty=snap?(getPortPos(nodes.find(n=>n.id===snap.nodeId)||fn,snap.side||'left').y):my;
   const cx=(sx+tx)/2;
   const d=`M${sx},${sy} C${cx},${sy} ${cx},${ty} ${tx},${ty}`;
   document.querySelectorAll('.temp-line').forEach(el=>el.remove());
@@ -465,11 +726,11 @@ function finishConn(targetId,targetSide){
 
 // ===== Node ops =====
 function addN(type,x,y){
-  const dfl={start:{label:'开始',role:'',inputDesc:'用户问题',outputDesc:'问题文本',transform:''},
-    end:{label:'结束',role:'',inputDesc:'处理结果',outputDesc:'最终输出',transform:''},
-    agent:{label:'智能体',role:'',inputDesc:'',outputDesc:'',transform:''},
-    condition:{label:'条件',role:'',inputDesc:'',outputDesc:'',transform:''},
-    parallel:{label:'并行',role:'',inputDesc:'',outputDesc:'',transform:''}};
+  const dfl={start:{label:'开始',role:'',prompt:'',inputDesc:'用户问题',outputDesc:'问题文本',transform:''},
+    end:{label:'结束',role:'',prompt:'',inputDesc:'处理结果',outputDesc:'最终输出',transform:''},
+    agent:{label:'智能体',role:'',prompt:'',inputDesc:'',outputDesc:'',transform:''},
+    condition:{label:'条件',role:'',prompt:'',inputDesc:'',outputDesc:'',transform:''},
+    parallel:{label:'并行',role:'',prompt:'',inputDesc:'',outputDesc:'',transform:''}};
   const d=dfl[type]||dfl.agent;const id=uid();
   nodes.push({id,type,x,y,...d,isRunning:false,_status:'idle',_fold:false,_bp:false});
   saveSnap();rAll();addLog(`添加: ${d.label}`,'success');
@@ -508,7 +769,6 @@ function endPan(){_pan=null;document.removeEventListener('mousemove',onPan);docu
 function applyT(){const cv=document.getElementById('canvas'),sv=document.getElementById('connections');
   cv.style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`;
   sv.style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`;
-  // 连线标签在 rEdges() 中已处理缩放
 }
 
 // Drag from sidebar
@@ -536,13 +796,19 @@ function closeCtx(){document.getElementById('ctxMenu').style.display='none';_ctx
 function setEdgeLbl(id){const out=edges.filter(e=>e.source===id);if(!out.length){addLog('无出边','warn');return}
   const l=prompt('连线标签（条件分支填"真"/"假"）：','');if(l!==null)out.forEach(e=>{e.label=l});rEdges();addLog('标签已更新','info')}
 
-// Config
+// Config (enhanced with role & prompt)
 function loadCfg(id){const c=document.getElementById('cfgPane');if(!id){c.innerHTML='<div class="empty">点击节点进行配置</div>';return}
   const n=nodes.find(i=>i.id===id);if(!n)return;
-  let h=`<label>名称</label><input id="cName" value="${eH(n.label)}" />
-    <label>输入描述</label><input id="cIn" value="${eH(n.inputDesc||'')}" placeholder="这个节点的输入是什么" />
-    <label>输出描述</label><input id="cOut" value="${eH(n.outputDesc||'')}" placeholder="这个节点的输出是什么" />`;
-  h+=`<label>处理逻辑</label><textarea id="cTf" rows="3" placeholder="节点处理逻辑描述">${eH(n.transform||'')}</textarea>`;
+  let h=`<label>名称</label><input id="cName" value="${eH(n.label)}" />`;
+  if(n.type==='agent'){
+    h+=`<label>角色（Role）<span style="font-weight:400;font-size:10px;color:var(--text-muted)"> — 决定Agent的"人设"</span></label>
+    <input id="cRole" value="${eH(n.role||'')}" placeholder="例：客服意图分类助手" />`;
+    h+=`<label>系统提示词（Prompt）<span style="font-weight:400;font-size:10px;color:var(--text-muted)"> — 决定Agent"怎么干活"</span></label>
+    <textarea id="cPrompt" rows="4" placeholder="告诉Agent它的任务是什么、输出什么格式">${eH(n.prompt||'')}</textarea>`;
+  }
+  h+=`<label>输入描述</label><input id="cIn" value="${eH(n.inputDesc||'')}" placeholder="这个节点的输入是什么" />
+    <label>输出描述</label><input id="cOut" value="${eH(n.outputDesc||'')}" placeholder="这个节点的输出是什么" />
+    <label>处理逻辑</label><textarea id="cTf" rows="2" placeholder="节点处理逻辑描述">${eH(n.transform||'')}</textarea>`;
   h+=`<div class="row"><button class="btn-primary" onclick="saveCfg('${id}')" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:12px;cursor:pointer;font-weight:500">保存</button>
     <button onclick="aiGen('${id}')" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;color:var(--text-sec)">✨ AI生成</button></div>`;
   h+=`<label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:12px;margin-top:4px;cursor:pointer"><input type="checkbox" ${n._bp?'checked':''} onchange="togBp('${id}')" /> 运行到此暂停（断点）</label>`;
@@ -552,6 +818,8 @@ function saveCfg(id){const n=nodes.find(i=>i.id===id);if(!n)return;
   n.inputDesc=document.getElementById('cIn').value;
   n.outputDesc=document.getElementById('cOut').value;
   const tf=document.getElementById('cTf');if(tf)n.transform=tf.value;
+  const rl=document.getElementById('cRole');if(rl)n.role=rl.value;
+  const pm=document.getElementById('cPrompt');if(pm)n.prompt=pm.value;
   saveSnap();rAll();addLog(`已更新: ${n.label}`,'info');sel=id;loadCfg(id)}
 async function aiGen(id){const n=nodes.find(i=>i.id===id);if(!n)return;
   const a=getApi();if(!a.key){alert('请先配置API Key');return}
@@ -562,34 +830,19 @@ async function aiGen(id){const n=nodes.find(i=>i.id===id);if(!n)return;
     const tf=document.getElementById('cTf');if(tf)tf.value=c;addLog('AI生成成功','success')
   }catch(err){alert('生成失败: '+err.message);addLog('AI失败: '+err.message,'error')}}
 
-// Presets
-function loadPreset(t){if(sim)return;if(nodes.length&&!confirm('加载预设将清空画布，确定？'))return;
-  nodes=[];edges=[];sel=null;nIdCnt=0;eIdCnt=0;clearLogs();document.getElementById('splash').style.display='none';
-  document.getElementById('resPane').innerHTML='<div class="empty-msg">运行后查看结果</div>';
-  const a=(x,y,data)=>addND('agent',x,y,data),s=(x,y,d)=>addND('start',x,y,d),e=(x,y,d)=>addND('end',x,y,d),c=(x,y,d)=>addND('condition',x,y,d),p=(x,y,d)=>addND('parallel',x,y,d),ep=(s2,t2,l,cl)=>edges.push({id:euid(),source:s2,target:t2,sourceSide:'right',targetSide:'left',color:cl||'#4e6af2',width:2,label:l||''});
-  if(t==='simple'){s(100,100,{label:'用户输入',role:'',inputDesc:'用户问题',outputDesc:'问题文本',transform:'接收用户输入'});a(400,100,{label:'处理',role:'',inputDesc:'问题',outputDesc:'答案',transform:'处理请求并生成回答'});e(700,100,{label:'结果',role:'',inputDesc:'答案',outputDesc:'最终回复',transform:'展示结果'});
-    const ids=nodes.map(n=>n.id);ep(ids[0],ids[1],'');ep(ids[1],ids[2],'')}
-  else if(t==='feedback'){s(300,20,{label:'开始',role:'',inputDesc:'任务',outputDesc:'任务描述',transform:'发起任务'});a(300,130,{label:'生成草稿',role:'',inputDesc:'任务',outputDesc:'草稿',transform:'生成草稿'});a(300,240,{label:'质检',role:'',inputDesc:'草稿',outputDesc:'评分',transform:'quality>=80'});c(100,370,{label:'合格?',role:'',inputDesc:'评分',outputDesc:'判断',transform:'quality>=80'});e(500,370,{label:'结束',role:'',inputDesc:'',outputDesc:'最终输出',transform:'输出最终稿'});a(100,270,{label:'修改',role:'',inputDesc:'反馈',outputDesc:'修改稿',transform:'修改草稿'});
-    const ids=nodes.map(n=>n.id);ep(ids[0],ids[1],'');ep(ids[1],ids[2],'');ep(ids[2],ids[3],'分数','#4e6af2');ep(ids[2],ids[4],'通过','#00b42a');ep(ids[3],ids[5],'不通过','#f53f3f');ep(ids[5],ids[1],'重试','#ff7d00')}
-  else if(t==='parallel'){s(300,20,{label:'开始',role:'',inputDesc:'任务',outputDesc:'任务',transform:'分发'});p(300,130,{label:'并行',role:'',inputDesc:'任务',outputDesc:'子任务',transform:'并行分发'});a(80,300,{label:'分支A',role:'',inputDesc:'',outputDesc:'',transform:'处理A'});a(520,300,{label:'分支B',role:'',inputDesc:'',outputDesc:'',transform:'处理B'});e(300,450,{label:'结束',role:'',inputDesc:'结果',outputDesc:'最终',transform:'汇总'});
-    const ids=nodes.map(n=>n.id);ep(ids[0],ids[1],'');ep(ids[1],ids[2],'A');ep(ids[1],ids[3],'B');ep(ids[2],ids[4],'');ep(ids[3],ids[4],'')}
-  else if(t==='multi'){s(300,40,{label:'开始',role:'',inputDesc:'请求',outputDesc:'请求类型',transform:'接收请求'});c(300,160,{label:'判断',role:'',inputDesc:'请求',outputDesc:'路由',transform:'type'});
-    a(60,310,{label:'简单',role:'',inputDesc:'',outputDesc:'',transform:'简单处理'});a(300,310,{label:'标准',role:'',inputDesc:'',outputDesc:'',transform:'标准处理'});a(540,310,{label:'深度',role:'',inputDesc:'',outputDesc:'',transform:'深度处理'});e(300,450,{label:'结束',role:'',inputDesc:'',outputDesc:'输出',transform:'返回结果'});
-    const ids=nodes.map(n=>n.id);ep(ids[0],ids[1],'');ep(ids[1],ids[2],'简单');ep(ids[1],ids[3],'标准');ep(ids[1],ids[4],'复杂');ep(ids[2],ids[5],'');ep(ids[3],ids[5],'');ep(ids[4],ids[5],'')}
-  saveSnap();rAll();addLog(`加载预设: ${t}`,'success')}
-
 // Save/Load
 function saveWf(){if(!nodes.length){addLog('画布为空','warn');return}
-  const d={v:'6.1',t:new Date().toISOString(),nodes:nodes.map(n=>({...n,_status:void 0,isRunning:false})),edges:edges.map(e=>({...e}))};
+  const d={v:'7.0',t:new Date().toISOString(),nodes:nodes.map(n=>({...n,_status:void 0,isRunning:false})),edges:edges.map(e=>({...e,_flow:false}))};
   const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`wf-${Date.now()}.json`;a.click();URL.revokeObjectURL(a.href);addLog('已保存','success')}
 function loadWf(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();
   r.onload=function(ev){try{const d=JSON.parse(ev.target.result);if(!d.nodes||!d.edges)throw new Error('无效');
     if(nodes.length&&!confirm('清空画布？'))return;
-    nodes=d.nodes.map(n=>({...n,isRunning:false,_status:'idle',_bp:false}));edges=d.edges;sel=null;
+    nodes=d.nodes.map(n=>({...n,role:n.role||'',prompt:n.prompt||'',isRunning:false,_status:'idle',_bp:false}));edges=d.edges.map(e=>({...e,_flow:false}));sel=null;activeScenario=null;teachStepIdx=-1;
     nIdCnt=Math.max(...nodes.map(n=>parseInt(n.id.replace('n',''))||0),0);
     eIdCnt=Math.max(...edges.map(e=>parseInt(e.id.replace('e',''))||0),0);
     document.getElementById('splash').style.display='none';document.getElementById('resPane').innerHTML='<div class="empty-msg">运行后查看结果</div>';
+    document.getElementById('tutorialPane').innerHTML='<div class="empty-msg">加载教学场景后查看</div>';
     saveSnap();rAll();loadCfg(null);addLog(`加载: ${d.nodes.length}节点, ${d.edges.length}连线`,'success')
   }catch(err){alert('文件错误: '+err.message)}};r.readAsText(f);e.target.value=''}
 
@@ -613,10 +866,10 @@ function exportImg(){if(!nodes.length){addLog('画布为空','warn');return}
   nodes.forEach(n=>{const s=ST[n.type]||ST.agent;const x2=n.x-mx+20,y2=n.y-my+20;
     x.shadowColor='rgba(0,0,0,.06)';x.shadowBlur=8;x.shadowOffsetY=2;
     x.fillStyle='#fff';x.strokeStyle=s.border;x.lineWidth=1.5;
-    x.beginPath();x.roundRect(x2,y2,NW,70,10);x.fill();x.stroke();x.shadowColor='transparent';
+    x.beginPath();x.roundRect(x2,y2,NW,72,10);x.fill();x.stroke();x.shadowColor='transparent';
     x.fillStyle='#333';x.font='600 13px sans-serif';x.textAlign='left';x.fillText(s.icon+' '+(n.label||'未命名'),x2+14,y2+32);
-    if(n.inputDesc){x.fillStyle='#86909c';x.font='11px sans-serif';x.fillText('● '+(n.inputDesc||''),x2+14,y2+52)}
-    if(n.outputDesc){x.fillStyle='#86909c';x.font='11px sans-serif';x.textAlign='right';x.fillText((n.outputDesc||'')+' ●',x2+NW-14,y2+52)}});
+    if(n.inputDesc){x.fillStyle='#86909c';x.font='11px sans-serif';x.fillText('● '+(n.inputDesc||''),x2+14,y2+54)}
+    if(n.outputDesc){x.fillStyle='#86909c';x.font='11px sans-serif';x.textAlign='right';x.fillText((n.outputDesc||'')+' ●',x2+NW-14,y2+54)}});
   const a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download=`wf-${Date.now()}.png`;a.click();addLog('已导出图片','success');
   zoom=oz;panX=opx;panY=opy;applyT()}
 
@@ -642,54 +895,131 @@ function showVal(r){const p=r.filter(x=>x.l==='pass').length,w=r.filter(x=>x.l==
   else document.getElementById('valPane').innerHTML=r.map(x=>`<div class="val-item val-${x.l}">${x.l==='fail'?'✕':x.l==='warn'?'⚠':'✓'} ${eH(x.m)}</div>`).join('');
   switchTab('val')}
 
-// Run
-function toggleRun(){if(stepMode){exitStep();return}toggleRun()}
-async function run(){if(sim)return;if(!nodes.length){addLog('画布为空','error');return}if(!edges.length){addLog('无连线','error');return}
+// ===== Run (enhanced with teaching) =====
+const _teachSim = { paused: false, resume: null };
+
+function toggleRun(){
+  if(stepMode){exitStep();return}
+  if(!sim){
+    run();
+  }
+}
+
+async function run(){
+  if(sim)return;if(!nodes.length){addLog('画布为空','error');return}if(!edges.length){addLog('无连线','error');return}
   sim=true;document.getElementById('runBtn').disabled=true;document.getElementById('runBtn').textContent='⏳ 运行中';
-  clearLogs();document.getElementById('resPane').innerHTML='';ctx={};
+  clearLogs();document.getElementById('resPane').innerHTML='';ctx={};teachStepIdx=-1;
   nodes.forEach(n=>{n.isRunning=false;n._status='idle'});rAll();addLog('🚀 开始运行','info');
+
+  // Build teach map: nodeId -> tutorial step index
+  const teachMap={};
+  if(activeScenario){
+    activeScenario.tutorial.steps.forEach((st,i)=>{teachMap[st.nodeId]=i});
+  }
+
   const adj={};nodes.forEach(n=>{adj[n.id]=[]});edges.forEach(e=>{if(adj[e.source])adj[e.source].push(e.target)});
   let sn=nodes.filter(n=>n.type==='start');if(!sn.length){const hasIn={};edges.forEach(e=>{hasIn[e.target]=true});sn=nodes.filter(n=>!hasIn[n.id])}
   if(!sn.length)sn=[nodes[0]];const vis=new Set();let bpHit=false,exec=[];
-  async function runN(id){const n=nodes.find(i=>i.id===id);if(!n||vis.has(id))return;vis.add(id);
-    nodes.forEach(i=>{i.isRunning=false;i._status='idle'});n.isRunning=true;n._status='running';rAll();await slp(250);
-    if(n._bp&&!bpHit){bpHit=true;sim=false;document.getElementById('runBtn').disabled=false;document.getElementById('runBtn').textContent='▶ 运行';
-      addLog(`⏸ 断点: ${n.label}`,'warn');rVars();enterStep(exec,id);return}
+
+  async function runN(id){
+    const n=nodes.find(i=>i.id===id);if(!n||vis.has(id))return;vis.add(id);
+    nodes.forEach(i=>{i.isRunning=false;i._status='idle'});n.isRunning=true;n._status='running';rAll();
+
+    // Show teaching bubble if scenario loaded
+    if(teachMap[id]!==undefined){
+      showBubble(id,teachMap[id]);
+      await slp(600); // Give user time to read
+    }
+
+    await slp(300);
+
+    if(n._bp&&!bpHit){
+      bpHit=true;sim=false;document.getElementById('runBtn').disabled=false;document.getElementById('runBtn').textContent='▶ 运行';
+      addLog(`⏸ 断点: ${n.label}`,'warn');rVars();enterStep(exec,id);
+      hideBubble();return;
+    }
+
     try{
       let msg='';
       if(n.type==='start'){ctx={input:n.transform||'用户输入'};msg=`${n.label}: 初始化`;n._status='done'}
       else if(n.type==='end'){ctx.output=n.transform||'处理结果';msg=`${n.label}: 输出`;n._status='done'}
-      else if(n.type==='condition'){let res=true,e2=n.transform||'';
+      else if(n.type==='condition'){
+        let res=true,e2=n.transform||'';
         if(e2.includes('>=')){const p=e2.split('>=');if(p.length===2){const k=p[0].trim(),v=parseInt(p[1].trim());res=(ctx[k]||0)>=v}}
         else if(e2.includes('>')){const p=e2.split('>');if(p.length===2){const k=p[0].trim(),v=parseInt(p[1].trim());res=(ctx[k]||0)>v}}
-        ctx.conditionResult=res;msg=`${n.label}: ${res?'真':'假'}`;n._status=res?'done':'error';
-        const nxt=adj[n.id]||[];for(const t of nxt){const e2=edges.find(e=>e.source===n.id&&e.target===t);
-          if(!e2)continue;const follow=res?(e2.label!=='假'&&e2.label!=='false'):(e2.label==='假'||e2.label==='false');
-          if(follow&&!vis.has(t)){e2._flow=true;rEdges();exec.push({n:t,from:id});await runN(t);e2._flow=false;rEdges()}}
-        addLog(msg,res?'success':'warn');rAll();return}
-      else if(n.type==='parallel'){msg=`${n.label}: 分发给${(adj[n.id]||[]).length}个下游`;n._status='done';
+        else if(e2==='intent'){
+          // For 客服分流, route based on intent
+          const intent=(ctx.intent||'').toLowerCase();
+          if(intent.includes('退货')){ctx.conditionResult='退货';res=true}
+          else if(intent.includes('咨询')){ctx.conditionResult='咨询';res=false}
+          else if(intent.includes('投诉')){ctx.conditionResult='投诉';res=null}
+          else{ctx.conditionResult='其他';res=false}
+        }else{ctx.conditionResult=res}
+        msg=`${n.label}: ${ctx.conditionResult||(res?'真':'假')}`;n._status='done';
+        // Route all children
+        const nxt=adj[n.id]||[];
+        for(const t of nxt){
+          const edgeLabel=(edges.find(e=>e.source===n.id&&e.target===t)?.label||'').toLowerCase();
+          let follow=false;
+          if(e2==='intent'){
+            if(ctx.conditionResult==='退货'&&edgeLabel==='退货')follow=true;
+            else if(ctx.conditionResult==='咨询'&&edgeLabel==='咨询')follow=true;
+            else if(ctx.conditionResult==='投诉'&&edgeLabel==='投诉')follow=true;
+          }else{
+            follow=res?(edgeLabel!=='假'&&edgeLabel!=='false'&&edgeLabel!=='退回'):(edgeLabel==='假'||edgeLabel==='false'||edgeLabel==='退回');
+          }
+          if(follow&&!vis.has(t)){
+            const edg=edges.find(e=>e.source===n.id&&e.target===t);if(edg){edg._flow=true;rEdges()}
+            exec.push({n:t,from:id});await runN(t);if(edg){edg._flow=false;rEdges()}
+          }
+        }
+        addLog(msg,'success');rAll();return;
+      }else if(n.type==='parallel'){
+        msg=`${n.label}: 分发给${(adj[n.id]||[]).length}个下游`;n._status='done';
         const ts=(adj[n.id]||[]).map(async t=>{if(!vis.has(t)){exec.push({n:t,from:id});await runN(t)}});
-        await Promise.all(ts);rAll();addLog(msg,'success');return}
-      else{const d=n.transform||'处理数据';ctx[n.id]=d;msg=`${n.label}: ${d}`;n._status='done'}
-      addLog(msg,'success');rAll();await slp(150);
-      if(n.type!=='condition'&&n.type!=='parallel'){const nxt=adj[n.id]||[];
-        for(const t of nxt){if(!vis.has(t)){const e2=edges.find(e=>e.source===n.id&&e.target===t);if(e2){e2._flow=true;rEdges()}
-          exec.push({n:t,from:id});await runN(t);if(e2){e2._flow=false;rEdges()}}}}
-    }catch(err){n._status='error';addLog(`${n.label} 出错: ${err.message}`,'error');rAll()}}
+        await Promise.all(ts);rAll();addLog(msg,'success');return;
+      }else{
+        const d=n.transform||'处理数据';ctx[n.id]=d;
+        // Simulate output based on role
+        if(n.role?.includes('意图')){ctx.intent='退货退款'}
+        else if(n.role?.includes('退货')){ctx.reply='退货流程已发送'}
+        else if(n.role?.includes('咨询')){ctx.reply='产品说明已发送'}
+        else if(n.role?.includes('投诉')){ctx.reply='投诉已受理'}
+        else if(n.role?.includes('格式')){ctx.format_score=85}
+        else if(n.role?.includes('质检')){ctx.quality=ctx.quality?Math.min(95,ctx.quality+10):75}
+        else if(n.role?.includes('修改')){ctx.quality=(ctx.quality||70)+15;ctx.draft='修改完成'}
+        msg=`${n.label}: ${d}`;n._status='done';
+      }
+      addLog(msg,'success');rAll();await slp(200);
+      if(n.type!=='condition'&&n.type!=='parallel'){
+        const nxt=adj[n.id]||[];
+        for(const t of nxt){
+          if(!vis.has(t)){
+            const edg=edges.find(e=>e.source===n.id&&e.target===t);if(edg){edg._flow=true;rEdges()}
+            exec.push({n:t,from:id});await runN(t);if(edg){edg._flow=false;rEdges()}
+          }
+        }
+      }
+    }catch(err){n._status='error';addLog(`${n.label} 出错: ${err.message}`,'error');rAll()}
+  }
+
   for(const s of sn){if(!vis.has(s.id)){exec.push({n:s.id,from:null});await runN(s.id)}}
-  if(!bpHit){const t='📊 执行结果\n\n上下文:\n'+JSON.stringify(ctx,null,2);showRes(t);addLog('✅ 运行完成','success');
+
+  if(!bpHit){
+    hideBubble();
+    const t='📊 执行完成\n\n上下文:\n'+JSON.stringify(ctx,null,2);showRes(t);addLog('✅ 运行完成','success');
     rVars();sim=false;document.getElementById('runBtn').disabled=false;document.getElementById('runBtn').textContent='▶ 运行';
-    nodes.forEach(n=>{n.isRunning=false;n._status='idle'});rAll()}}
-// Actually call run
-const originalToggle=toggleRun;
-toggleRun=function(){if(stepMode){exitStep();return}run()};
+    nodes.forEach(n=>{n.isRunning=false;n._status='idle'});rAll();
+    if(activeScenario){switchTab('tutorial')}
+  }
+}
 
 // Step
 function enterStep(o,id){stepMode=true;stepQ=o;stepIdx=Math.max(0,o.findIndex(x=>x.n===id));
   document.getElementById('stepBar').classList.add('active');updStep();addLog('🔍 步进模式','info')}
 function exitStep(){stepMode=false;sim=false;document.getElementById('stepBar').classList.remove('active');
   document.getElementById('runBtn').disabled=false;document.getElementById('runBtn').textContent='▶ 运行';
-  nodes.forEach(n=>{n.isRunning=false;n._status='idle'});rAll();addLog('退出步进','info')}
+  nodes.forEach(n=>{n.isRunning=false;n._status='idle'});rAll();hideBubble();addLog('退出步进','info')}
 function stepNext(){if(!stepMode||stepIdx>=stepQ.length-1)return;stepIdx++;
   const t=stepQ[stepIdx];if(t){sel=t.n;rAll();loadCfg(t.n);addLog(`步进: ${nodes.find(n=>n.id===t.n)?.label||t.n}`,'info')}updStep()}
 function stepPrev(){if(!stepMode||stepIdx<=0)return;stepIdx--;
@@ -698,10 +1028,18 @@ function updStep(){document.getElementById('stepInfo').textContent=`${stepIdx+1}
   document.getElementById('stepNextBtn').disabled=stepIdx>=stepQ.length-1}
 
 // Init
-function init(){const a=(x,y,d)=>addND('agent',x,y,d),s=(x,y,d)=>addND('start',x,y,d),e=(x,y,d)=>addND('end',x,y,d);
-  s(120,150,{label:'开始',role:'',inputDesc:'用户问题',outputDesc:'问题文本',transform:'用户输入'});a(400,150,{label:'处理',role:'',inputDesc:'问题',outputDesc:'回答',transform:'分析并生成回答'});e(680,150,{label:'结果',role:'',inputDesc:'回答',outputDesc:'最终回复',transform:'展示结果'});
-  const ids=nodes.map(n=>n.id);edges.push({id:euid(),source:ids[0],target:ids[1],sourceSide:'right',targetSide:'left',color:'#4e6af2',width:2,label:''});edges.push({id:euid(),source:ids[1],target:ids[2],sourceSide:'right',targetSide:'left',color:'#4e6af2',width:2,label:''});
-  rAll();document.getElementById('splash').style.display='none';addLog('默认工作流已加载','info')}
+function init(){
+  initScenarioList();
+  const a=(x,y,d)=>addND('agent',x,y,d),s=(x,y,d)=>addND('start',x,y,d),e=(x,y,d)=>addND('end',x,y,d);
+  s(120,150,{label:'开始',role:'',prompt:'',inputDesc:'用户问题',outputDesc:'问题文本',transform:'用户输入'});
+  a(400,150,{label:'处理',role:'',prompt:'',inputDesc:'问题',outputDesc:'回答',transform:'分析并生成回答'});
+  e(680,150,{label:'结果',role:'',prompt:'',inputDesc:'回答',outputDesc:'最终回复',transform:'展示结果'});
+  const ids=nodes.map(n=>n.id);
+  edges.push({id:euid(),source:ids[0],target:ids[1],sourceSide:'right',targetSide:'left',color:'#4e6af2',width:2,label:''});
+  edges.push({id:euid(),source:ids[1],target:ids[2],sourceSide:'right',targetSide:'left',color:'#4e6af2',width:2,label:''});
+  rAll();document.getElementById('splash').style.display='none';addLog('默认工作流已加载 — 或从左侧选择一个教学场景 📚','info');
+}
+
 document.addEventListener('click',closeCtx);
 nodes=[];edges=[];nIdCnt=0;eIdCnt=0;init();
 if(nodes.length){sel=nodes[0].id;loadCfg(sel)}saveSnap();
