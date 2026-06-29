@@ -181,12 +181,29 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 .flowing{animation:flow .6s linear infinite}
 .error-line{animation:none}
+
+.contact-btn{margin-left:12px;height:28px;padding:0 12px;border-radius:14px;border:1px solid var(--accent);background:transparent;color:var(--accent);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;font-weight:500}
+.contact-btn:hover{background:var(--accent);color:#fff}
+
+/* 联系弹窗 */
+.contact-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.contact-overlay.show{opacity:1;pointer-events:auto}
+.contact-card{background:var(--panel-bg);border-radius:16px;padding:36px 44px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25);transform:translateY(12px);transition:transform .25s}
+.contact-overlay.show .contact-card{transform:translateY(0)}
+.contact-card .cc-icon{font-size:40px;margin-bottom:12px}
+.contact-card .cc-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px}
+.contact-card .cc-desc{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+.contact-card .cc-vx{font-size:26px;font-weight:800;color:var(--accent);letter-spacing:2px;padding:12px 28px;background:var(--bg-hover);border-radius:10px;margin-bottom:20px;user-select:all;cursor:text}
+.contact-card .cc-hint{font-size:11px;color:var(--text-muted);margin-bottom:18px}
+.contact-card .cc-close{padding:8px 32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-sec);font-size:13px;cursor:pointer;transition:all .15s}
+.contact-card .cc-close:hover{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="3"/><circle cx="5" cy="20" r="3"/><circle cx="19" cy="20" r="3"/><path d="M12 7v3M5 17l2-4M19 17l-2-4"/><path d="M7 13h10" stroke-width="2.5"/></svg> Agent 教学演示器</div>
+  <button class="contact-btn" onclick="showContact()" title="联系作者">💬 联系我</button>
   <div class="hd-actions">
     <button onclick="validateWf()">✓ 验证</button>
     <button onclick="exportImg()">🖼 导出</button>
@@ -1052,6 +1069,8 @@ function stepPrev(){if(!stepMode||stepIdx<=0)return;stepIdx--;
   const t=stepQ[stepIdx];if(t){sel=t.n;rAll();loadCfg(t.n);addLog(`回退: ${nodes.find(n=>n.id===t.n)?.label||t.n}`,'info')}updStep()}
 function updStep(){document.getElementById('stepInfo').textContent=`${stepIdx+1}/${stepQ.length}`;
   document.getElementById('stepNextBtn').disabled=stepIdx>=stepQ.length-1}
+function showContact(){document.getElementById('contactOverlay').classList.add('show')}
+function closeContact(){document.getElementById('contactOverlay').classList.remove('show')}
 
 // Init
 function init(){
@@ -1071,5 +1090,18 @@ nodes=[];edges=[];nIdCnt=0;eIdCnt=0;init();
 if(nodes.length){sel=nodes[0].id;loadCfg(sel)}saveSnap();
 onProvChange();
 </script>
+
+<!-- 联系弹窗 -->
+<div class="contact-overlay" id="contactOverlay" onclick="if(event.target===this)closeContact()">
+  <div class="contact-card">
+    <div class="cc-icon">💬</div>
+    <div class="cc-title">联系作者</div>
+    <div class="cc-desc">微信扫码或复制微信号添加</div>
+    <div class="cc-vx" id="ccVx">+V779891121</div>
+    <div class="cc-hint">点击上方微信号可复制</div>
+    <button class="cc-close" onclick="closeContact()">关闭</button>
+  </div>
+</div>
+
 </body>
 </html>
