@@ -193,6 +193,7 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
     <button onclick="saveWf()">💾 保存</button>
     <button onclick="document.getElementById('loadInp').click()">📂 加载</button>
     <input id="loadInp" type="file" accept=".json" style="display:none" onchange="loadWf(event)" />
+    <button onclick="clearCanvas()" style="color:var(--text-muted);border-color:var(--border)">🗑 清除</button>
     <button class="btn-primary" id="runBtn" onclick="toggleRun()">▶ 运行</button>
     <button class="btn-icon" onclick="toggleTheme()" id="themeBtn">🌙</button>
   </div>
@@ -845,6 +846,22 @@ function loadWf(e){const f=e.target.files[0];if(!f)return;const r=new FileReader
     document.getElementById('tutorialPane').innerHTML='<div class="empty-msg">加载教学场景后查看</div>';
     saveSnap();rAll();loadCfg(null);addLog(`加载: ${d.nodes.length}节点, ${d.edges.length}连线`,'success')
   }catch(err){alert('文件错误: '+err.message)}};r.readAsText(f);e.target.value=''}
+
+function clearCanvas(){
+  if(nodes.length===0&&edges.length===0)return;
+  if(!confirm('确定清除画布？所有节点和连线将被删除。'))return;
+  nodes=[];edges=[];sel=null;activeScenario=null;teachStepIdx=-1;ctx={};
+  nIdCnt=0;eIdCnt=0;logs=[];
+  zoom=1;panX=0;panY=0;applyT();
+  document.getElementById('splash').style.display='';
+  document.getElementById('varsPane').innerHTML='<div class="empty-msg">运行后查看变量</div>';
+  document.getElementById('resPane').innerHTML='<div class="empty-msg">运行后查看结果</div>';
+  document.getElementById('tutorialPane').innerHTML='<div class="empty-msg">加载教学场景后查看</div>';
+  document.getElementById('bubble').style.display='none';
+  rLogs();rAll();loadCfg(null);
+  addLog('画布已清除','success');
+  saveSnap();
+}
 
 // Export image
 function exportImg(){if(!nodes.length){addLog('画布为空','warn');return}
