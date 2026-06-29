@@ -47,8 +47,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue"
 /* Canvas */
 .canvas-wrap{flex:1;position:relative;overflow:hidden;background:var(--bg-canvas);background-image:radial-gradient(circle at 20px 20px, var(--dot) .7px, transparent .7px);background-size:40px 40px;cursor:grab}
 .canvas-wrap.panning{cursor:grabbing}
-#canvas{width:100%;height:100%;position:relative;transform-origin:0 0}
-svg.connections{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5}
+#canvas{width:100%;height:100%;position:relative;transform-origin:0 0;z-index:5}
+svg.connections{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:6;transform-origin:0 0}
 svg.connections path{pointer-events:stroke;cursor:pointer}
 svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important}
 @keyframes flow{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}
@@ -74,15 +74,12 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 .ns-item{font-size:11px;color:var(--text-sec);padding:2px 0;display:flex;align-items:center;gap:4px;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ns-item .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 /* Port */
-.port{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--bg-card);border:2px solid var(--text-muted);z-index:15;cursor:crosshair;transition:all .15s}
-.port:hover{transform:scale(1.4);border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
-.port-in{border-color:var(--blue)}.port-in:hover{border-color:var(--accent);background:rgba(78,106,242,.15)}
-.port-out{border-color:var(--orange);background:var(--orange);cursor:grab;}
-.port-out:hover{background:var(--accent);border-color:var(--accent)}
+.port{position:absolute;width:14px;height:14px;border-radius:50%;background:var(--bg-card);border:2px solid var(--accent);z-index:15;cursor:crosshair;transition:all .15s}
+.port:hover{transform:scale(1.4);border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);background:rgba(78,106,242,.15)}
 .port-left{left:-7px;top:50%;transform:translateY(-50%)}.port-left:hover{transform:translateY(-50%) scale(1.4)}
 .port-right{right:-7px;top:50%;transform:translateY(-50%)}.port-right:hover{transform:translateY(-50%) scale(1.4)}
+.port.snap-hover{transform:translateY(-50%) scale(1.6)!important;border-color:#00b42a;background:rgba(0,180,42,.2);box-shadow:0 0 8px rgba(0,180,42,.5)}
 /* 连线拖拽中输入端口高亮 */
-.port-in.snap-hover{transform:translateY(-50%) scale(1.6)!important;border-color:#00b42a;background:rgba(0,180,42,.2);box-shadow:0 0 8px rgba(0,180,42,.5)}
 /* Splash */
 .splash{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.7);backdrop-filter:blur(6px);padding:28px 40px;border-radius:16px;text-align:center;color:var(--text-muted);font-size:13px;pointer-events:none;z-index:1;border:1px solid rgba(255,255,255,.5);line-height:1.8}
 .dark .splash{background:rgba(35,35,36,.75);border-color:rgba(55,55,58,.5)}
@@ -148,7 +145,9 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--scroll);border-radius:20px}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.flowing{animation:flow .6s linear infinite}
+.error-line{animation:none}
 </style>
 </head>
 <body>
@@ -184,7 +183,7 @@ svg.connections path:hover{stroke-width:3.5!important;stroke-opacity:1!important
   </div>
 
   <div class="canvas-wrap" id="canvasWrap">
-    <div class="splash" id="splash"><strong>从左侧拖拽节点开始设计</strong><br/>从 <span style="color:var(--orange)">●</span> 拖到 <span style="color:var(--blue)">●</span> 松手即连<br/>滚轮缩放 · 拖拽空白平移 · Ctrl+Z 撤销</div>
+    <div class="splash" id="splash"><strong>从左侧拖拽节点开始设计</strong><br/>从 <span style="color:var(--accent)">●</span> 拖到另一个 <span style="color:var(--accent)">●</span> 松手即连<br/>滚轮缩放 · 拖拽空白平移 · Ctrl+Z 撤销</div>
     <svg class="connections" id="connections"></svg>
     <div id="canvas"></div>
   </div>
@@ -348,9 +347,11 @@ function buildN(node){
   }
   card.appendChild(bd);
   div.appendChild(card);
-  // Ports: LEFT = input, RIGHT = output
-  const pi=document.createElement('div');pi.className='port port-in port-left';pi.dataset.node=node.id;pi.dataset.pT='in';pi.title='接收连线';card.appendChild(pi);
-  const po=document.createElement('div');po.className='port port-out port-right';po.dataset.node=node.id;po.dataset.pT='out';po.title='拖出连线';card.appendChild(po);
+  // Ports: Start=仅右, End=仅左, 其他=双向
+  if(node.type!=='start'){const pi=document.createElement('div');pi.className='port port-left';pi.dataset.node=node.id;pi.dataset.pT='left';pi.title='连线';card.appendChild(pi);
+    pi.addEventListener('mousedown',function(e){e.stopPropagation();e.preventDefault();finishConn(node.id,'left')});}
+  if(node.type!=='end'){const po=document.createElement('div');po.className='port port-right';po.dataset.node=node.id;po.dataset.pT='right';po.title='连线';card.appendChild(po);
+    po.addEventListener('mousedown',function(e){e.stopPropagation();e.preventDefault();startConn(e,node.id,'right')});}
 
   div.addEventListener('mousedown',function(e){
     if(e.target.closest('.del-n')||e.target.closest('.port'))return;
@@ -360,105 +361,103 @@ function buildN(node){
     document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',endMove);
   });
   div.addEventListener('contextmenu',function(e){e.preventDefault();e.stopPropagation();showCtx(e.clientX,e.clientY,node.id)});
-
-  pi.addEventListener('mousedown',function(e){e.stopPropagation();e.preventDefault();if(_conn)finishConn(node.id)});
-  po.addEventListener('mousedown',function(e){e.stopPropagation();e.preventDefault();startConn(e,node.id)});
   return div;
 }
 
 function rEdges(){
   const svg=document.getElementById('connections');let html='';const labels=[];
-  // 清理旧的连线标签（防止缩放后累积偏移）
   document.querySelectorAll('.edge-label').forEach(el=>el.remove());
   edges.forEach(e=>{const sn=nodes.find(n=>n.id===e.source),tn=nodes.find(n=>n.id===e.target);
     if(!sn||!tn)return;
-    const sp=getPortPos(sn,'right'),tp=getPortPos(tn,'left');
+    const srcSide=e.sourceSide||'right',tgtSide=e.targetSide||'left';
+    const sp=getPortPos(sn,srcSide),tp=getPortPos(tn,tgtSide);
     const sx=sp.x,sy=sp.y,tx=tp.x,ty=tp.y;
     const cx=(sx+tx)/2;
     const path=`M${sx},${sy} C${cx},${sy} ${cx},${ty} ${tx},${ty}`;
-    const color=e.color||'#86909c',dash=e.dashed?'6,4':'none',flow=e._flow?' flowing':'';
-    html+=`<path d="${path}" stroke="${color}" stroke-width="2" fill="none" stroke-dasharray="${dash}" opacity=".7" class="${flow}" onclick="delEdge('${e.id}')" title="点击删除"/>`;
+    const isError=sn._status==='error'||tn._status==='error';
+    const isFlow=e._flow;
+    const color=isError?'#f53f3f':(isFlow?'#4e6af2':(e.color||'#4e6af2'));
+    const dash=isFlow?'8,6':(e.dashed?'6,4':'none');
+    const flow=isFlow?' flowing':(isError?' error-line':'');
+    html+=`<path d="${path}" stroke="${color}" stroke-width="2" fill="none" stroke-dasharray="${dash}" opacity="${isError?'1':'.7'}" class="${flow}" onclick="delEdge('${e.id}')" title="点击删除"/>`;
     if(e.label){const mx=(sx+tx)/2,my=(sy+ty)/2-14;labels.push({l:e.label,x:mx,y:my})}
   });
   svg.innerHTML=html;
   labels.forEach(l=>{const el=document.createElement('div');el.className='edge-label';el.textContent=l.l;
     el.style.left=l.x+'px';el.style.top=l.y+'px';document.getElementById('canvas').appendChild(el)});
-  // 缩放时反向缩放标签文字（保持可读）
   document.querySelectorAll('.edge-label').forEach(el=>{el.style.transform=`translate(-50%,-50%) scale(${1/zoom})`});
 }
 function getPortPos(node,side){
-  const cx=node.x+NW/2,cy=node.y+NH/2;
-  return side==='right'?{x:node.x+NW+7,y:cy}:{x:node.x-7,y:cy};
+  const el=document.getElementById('n-'+node.id);
+  if(!el){const cy=node.y+NH/2;return side==='right'?{x:node.x+NW,y:cy}:{x:node.x,y:cy}}
+  const port=el.querySelector(side==='right'?'.port-right':'.port-left');
+  if(!port){const cy=node.y+NH/2;return side==='right'?{x:node.x+NW,y:cy}:{x:node.x,y:cy}}
+  const pr=port.getBoundingClientRect(),wr=document.getElementById('canvasWrap').getBoundingClientRect();
+  const cx=pr.left+pr.width/2-wr.left,cy=pr.top+pr.height/2-wr.top;
+  return{x:(cx-panX)/zoom,y:(cy-panY)/zoom}
 }
 
-// ===== Connections: 拖拽一步完成 =====
-// 从 ●(右/输出) 拖到 ●(左/输入) 松开鼠标 = 连线完成
-function startConn(e,fromId){
+// ===== Connections: 双向拖拽 =====
+function startConn(e,fromId,fromSide){
   if(sim)return;
   e.preventDefault();
-  _conn={from:fromId};
+  _conn={from:fromId,fromSide:fromSide};
   const wrap=document.getElementById('canvasWrap');
   _conn._wrapRect=wrap.getBoundingClientRect();
   document.addEventListener('mousemove',onConn);
-  document.addEventListener('mouseup',endConn2);  // 用新版 endConn2
+  document.addEventListener('mouseup',endConn2);
 }
 function onConn(e){
   if(!_conn)return;
   const svg=document.getElementById('connections'),wrap=document.getElementById('canvasWrap');
   const rect=wrap.getBoundingClientRect();
   const fn=nodes.find(n=>n.id===_conn.from);if(!fn)return;
-  const sp=getPortPos(fn,'right');
-  // 起点：canvas 坐标 → 视口坐标
-  const fx=sp.x*zoom+panX, fy=sp.y*zoom+panY;
-  // 终点：鼠标视口坐标（相对于 canvasWrap）
-  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
-  // 吸附：检测是否靠近某个输入端口
+  const sp=getPortPos(fn,_conn.fromSide||'right');
+  const sx=sp.x,sy=sp.y;
+  const mx_vp=e.clientX-rect.left,my_vp=e.clientY-rect.top;
+  const mx=(mx_vp-panX)/zoom,my=(my_vp-panY)/zoom;
+  // 吸附：所有端口
   let snap=null,snapD=Infinity;
-  document.querySelectorAll('.port-in').forEach(el=>{
+  document.querySelectorAll('.port').forEach(el=>{
     const er=el.getBoundingClientRect();
-    const ecx=er.left+er.width/2-rect.left,ecy=er.top+er.height/2-rect.top;
-    const d=Math.hypot(mx-ecx,my-ecy);
-    if(d<30&&d<snapD){snapD=d;snap={x:ecx,y:ecy,nodeId:el.dataset.node}}
+    const ecx_vp=er.left+er.width/2-rect.left,ecy_vp=er.top+er.height/2-rect.top;
+    const d=Math.hypot(mx_vp-ecx_vp,my_vp-ecy_vp);
+    if(d<40&&d<snapD&&el.dataset.node!==_conn.from){snapD=d;snap={nodeId:el.dataset.node,side:el.dataset.pT}}
   });
-  // 更新吸附高亮
-  document.querySelectorAll('.port-in.snap-hover').forEach(el=>el.classList.remove('snap-hover'));
+  // 吸附高亮
+  document.querySelectorAll('.port.snap-hover').forEach(el=>el.classList.remove('snap-hover'));
   if(snap){
-    document.querySelector(`.port-in[data-node="${snap.nodeId}"]`)?.classList.add('snap-hover');
+    const targetPort=document.querySelector(`#n-${snap.nodeId} .port[data-p-t="${snap.side}"]`);
+    if(targetPort)targetPort.classList.add('snap-hover');
   }
-  const toX=snap?snap.x:mx, toY=snap?snap.y:my;
-  const cx=(fx+toX)/2;
-  const d=`M${fx},${fy} C${cx},${fy} ${cx},${toY} ${toX},${toY}`;
+  const tx=snap?(getPortPos(nodes.find(n=>n.id===snap.nodeId)||fn,snap.side).x):mx;
+  const ty=snap?(getPortPos(nodes.find(n=>n.id===snap.nodeId)||fn,snap.side).y):my;
+  const cx=(sx+tx)/2;
+  const d=`M${sx},${sy} C${cx},${sy} ${cx},${ty} ${tx},${ty}`;
   document.querySelectorAll('.temp-line').forEach(el=>el.remove());
   const line=document.createElementNS('http://www.w3.org/2000/svg','path');
   line.setAttribute('d',d);line.classList.add('temp-line');
-  line.style.cssText='stroke:var(--accent, #4e6af2);stroke-width:2.5;stroke-dasharray:6,6;fill:none;opacity:.9';
+  line.style.cssText='stroke:#4e6af2;stroke-width:2.5;stroke-dasharray:6,6;fill:none;opacity:.9';
   svg.appendChild(line);
-  // 保存吸附目标供 endConn2 使用
   _conn._snapTarget=snap;
 }
 function endConn2(e){
   document.removeEventListener('mousemove',onConn);
   document.removeEventListener('mouseup',endConn2);
   document.querySelectorAll('.temp-line').forEach(el=>el.remove());
-  document.querySelectorAll('.port-in.snap-hover').forEach(el=>el.classList.remove('snap-hover'));
+  document.querySelectorAll('.port.snap-hover').forEach(el=>el.classList.remove('snap-hover'));
   if(!_conn)return;
-  // 如果有吸附目标，直接完成连线
   if(_conn._snapTarget){
-    finishConn(_conn._snapTarget.nodeId)
+    finishConn(_conn._snapTarget.nodeId,_conn._snapTarget.side)
   }
   _conn=null;
 }
-// 兼容：输入端口的 mousedown 也可以完成连线（用于点击方式）
-function finishConn(targetId){
-  if(!_conn&&!sim){
-    // 没有进行中的连接，开始一个新的（反向：从输入端口发起）
-    // 不做任何事，保持单向：只能从输出→输入
-    return;
-  }
-  if(!_conn)return;
-  const fromId=_conn.from;if(fromId===targetId){_conn=null;return}
+function finishConn(targetId,targetSide){
+  if(!_conn){return}
+  const fromId=_conn.from,fromSide=_conn.fromSide||'right';
+  if(fromId===targetId){_conn=null;return}
   if(edges.some(e=>e.source===fromId&&e.target===targetId)){_conn=null;return}
-  edges.push({id:euid(),source:fromId,target:targetId,sourcePort:'right',targetPort:'left',color:'#86909c',width:2,label:''});
+  edges.push({id:euid(),source:fromId,target:targetId,sourceSide:fromSide,targetSide:targetSide||'left',color:'#4e6af2',width:2,label:''});
   const fn=nodes.find(n=>n.id===fromId),tn=nodes.find(n=>n.id===targetId);
   addLog(`连线: ${fn?.label} → ${tn?.label}`,'success');
   saveSnap();rAll();_conn=null;
@@ -567,11 +566,11 @@ async function aiGen(id){const n=nodes.find(i=>i.id===id);if(!n)return;
 function loadPreset(t){if(sim)return;if(nodes.length&&!confirm('加载预设将清空画布，确定？'))return;
   nodes=[];edges=[];sel=null;nIdCnt=0;eIdCnt=0;clearLogs();document.getElementById('splash').style.display='none';
   document.getElementById('resPane').innerHTML='<div class="empty-msg">运行后查看结果</div>';
-  const a=(x,y,data)=>addND('agent',x,y,data),s=(x,y,d)=>addND('start',x,y,d),e=(x,y,d)=>addND('end',x,y,d),c=(x,y,d)=>addND('condition',x,y,d),p=(x,y,d)=>addND('parallel',x,y,d),ep=(s,t,l,c)=>edges.push({id:euid(),source:s,target:t,sourcePort:'right',targetPort:'left',color:c||'#86909c',width:2,label:l||''});
+  const a=(x,y,data)=>addND('agent',x,y,data),s=(x,y,d)=>addND('start',x,y,d),e=(x,y,d)=>addND('end',x,y,d),c=(x,y,d)=>addND('condition',x,y,d),p=(x,y,d)=>addND('parallel',x,y,d),ep=(s2,t2,l,cl)=>edges.push({id:euid(),source:s2,target:t2,sourceSide:'right',targetSide:'left',color:cl||'#4e6af2',width:2,label:l||''});
   if(t==='simple'){s(100,100,{label:'用户输入',role:'',inputDesc:'用户问题',outputDesc:'问题文本',transform:'接收用户输入'});a(400,100,{label:'处理',role:'',inputDesc:'问题',outputDesc:'答案',transform:'处理请求并生成回答'});e(700,100,{label:'结果',role:'',inputDesc:'答案',outputDesc:'最终回复',transform:'展示结果'});
     const ids=nodes.map(n=>n.id);ep(ids[0],ids[1],'');ep(ids[1],ids[2],'')}
   else if(t==='feedback'){s(300,20,{label:'开始',role:'',inputDesc:'任务',outputDesc:'任务描述',transform:'发起任务'});a(300,130,{label:'生成草稿',role:'',inputDesc:'任务',outputDesc:'草稿',transform:'生成草稿'});a(300,240,{label:'质检',role:'',inputDesc:'草稿',outputDesc:'评分',transform:'quality>=80'});c(100,370,{label:'合格?',role:'',inputDesc:'评分',outputDesc:'判断',transform:'quality>=80'});e(500,370,{label:'结束',role:'',inputDesc:'',outputDesc:'最终输出',transform:'输出最终稿'});a(100,270,{label:'修改',role:'',inputDesc:'反馈',outputDesc:'修改稿',transform:'修改草稿'});
-    const ids=nodes.map(n=>n.id);ep(ids[0],ids[1],'');ep(ids[1],ids[2],'');ep(ids[2],ids[3],'分数','#86909c');ep(ids[2],ids[4],'通过','#00b42a');ep(ids[3],ids[5],'不通过','#f53f3f');ep(ids[5],ids[1],'重试','#ff7d00')}
+    const ids=nodes.map(n=>n.id);ep(ids[0],ids[1],'');ep(ids[1],ids[2],'');ep(ids[2],ids[3],'分数','#4e6af2');ep(ids[2],ids[4],'通过','#00b42a');ep(ids[3],ids[5],'不通过','#f53f3f');ep(ids[5],ids[1],'重试','#ff7d00')}
   else if(t==='parallel'){s(300,20,{label:'开始',role:'',inputDesc:'任务',outputDesc:'任务',transform:'分发'});p(300,130,{label:'并行',role:'',inputDesc:'任务',outputDesc:'子任务',transform:'并行分发'});a(80,300,{label:'分支A',role:'',inputDesc:'',outputDesc:'',transform:'处理A'});a(520,300,{label:'分支B',role:'',inputDesc:'',outputDesc:'',transform:'处理B'});e(300,450,{label:'结束',role:'',inputDesc:'结果',outputDesc:'最终',transform:'汇总'});
     const ids=nodes.map(n=>n.id);ep(ids[0],ids[1],'');ep(ids[1],ids[2],'A');ep(ids[1],ids[3],'B');ep(ids[2],ids[4],'');ep(ids[3],ids[4],'')}
   else if(t==='multi'){s(300,40,{label:'开始',role:'',inputDesc:'请求',outputDesc:'请求类型',transform:'接收请求'});c(300,160,{label:'判断',role:'',inputDesc:'请求',outputDesc:'路由',transform:'type'});
@@ -606,10 +605,10 @@ function exportImg(){if(!nodes.length){addLog('画布为空','warn');return}
   x.strokeStyle=document.body.classList.contains('dark')?'#37373a':'#d6dae0';x.lineWidth=.5;
   for(let i=0;i<w;i+=40){x.beginPath();x.moveTo(i,0);x.lineTo(i,h);x.stroke();x.beginPath();x.moveTo(0,i);x.lineTo(w,i);x.stroke()}
   edges.forEach(e=>{const sn=nodes.find(n=>n.id===e.source),tn=nodes.find(n=>n.id===e.target);if(!sn||!tn)return;
-    const sp=getPortPos(sn,'right'),tp=getPortPos(tn,'left');
+    const sp=getPortPos(sn,e.sourceSide||'right'),tp=getPortPos(tn,e.targetSide||'left');
     const sx=sp.x-mx+20,sy=sp.y-my+20,tx=tp.x-mx+20,ty=tp.y-my+20,c=(sx+tx)/2;
     x.beginPath();x.moveTo(sx,sy);x.bezierCurveTo(c,sy,c,ty,tx,ty);
-    x.strokeStyle=e.color||'#86909c';x.lineWidth=2;x.setLineDash(e.dashed?[6,4]:[]);x.stroke();x.setLineDash([]);
+    x.strokeStyle=e.color||'#4e6af2';x.lineWidth=2;x.setLineDash(e.dashed?[6,4]:[]);x.stroke();x.setLineDash([]);
     if(e.label){x.fillStyle=document.body.classList.contains('dark')?'#e5e6eb':'#4e5969';x.font='11px sans-serif';x.textAlign='center';x.fillText(e.label,(sx+tx)/2,(sy+ty)/2-14)}});
   nodes.forEach(n=>{const s=ST[n.type]||ST.agent;const x2=n.x-mx+20,y2=n.y-my+20;
     x.shadowColor='rgba(0,0,0,.06)';x.shadowBlur=8;x.shadowOffsetY=2;
@@ -701,7 +700,7 @@ function updStep(){document.getElementById('stepInfo').textContent=`${stepIdx+1}
 // Init
 function init(){const a=(x,y,d)=>addND('agent',x,y,d),s=(x,y,d)=>addND('start',x,y,d),e=(x,y,d)=>addND('end',x,y,d);
   s(120,150,{label:'开始',role:'',inputDesc:'用户问题',outputDesc:'问题文本',transform:'用户输入'});a(400,150,{label:'处理',role:'',inputDesc:'问题',outputDesc:'回答',transform:'分析并生成回答'});e(680,150,{label:'结果',role:'',inputDesc:'回答',outputDesc:'最终回复',transform:'展示结果'});
-  const ids=nodes.map(n=>n.id);edges.push({id:euid(),source:ids[0],target:ids[1],sourcePort:'right',targetPort:'left',color:'#86909c',width:2,label:''});edges.push({id:euid(),source:ids[1],target:ids[2],sourcePort:'right',targetPort:'left',color:'#86909c',width:2,label:''});
+  const ids=nodes.map(n=>n.id);edges.push({id:euid(),source:ids[0],target:ids[1],sourceSide:'right',targetSide:'left',color:'#4e6af2',width:2,label:''});edges.push({id:euid(),source:ids[1],target:ids[2],sourceSide:'right',targetSide:'left',color:'#4e6af2',width:2,label:''});
   rAll();document.getElementById('splash').style.display='none';addLog('默认工作流已加载','info')}
 document.addEventListener('click',closeCtx);
 nodes=[];edges=[];nIdCnt=0;eIdCnt=0;init();
